@@ -1,3 +1,4 @@
+/simple schema for the registry
 \d .reg
 registry:([];
 	farm:`symbol$();
