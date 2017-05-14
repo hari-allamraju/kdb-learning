@@ -1,17 +1,25 @@
+\c 50 500
 cwd:system"cd"
-show "running from ",cwd
+system"l ",cwd,"/logging.q"
+
+.log.debug "Running from ",cwd
+
 
 /set the port where we want to run on
-show "checking port"
 if[0i=system"p";system"p 1111"]
+p:string system"p"
+.log.debug "Running on port",p
+
+opts:.Q.def[`group`resource!`default`registry].Q.opt .z.x
 
 /load the schema of the tables that we want to use in this service
-show "loading schema"
+.log.debug "Loading schema"
 system"l ",cwd,"/schema/registry.q"
 
 
 /make a record for the registry - other KDB services can connect to this and check
-`.reg.registry insert (`global;`registry;.z.h;system"p")
+`.reg.registry insert (opts`group;opts`registry;.z.h;`$p)
+.log.info "registered self on ",(string .z.h)," with port ",p
 
 
 /define some code that can be used to register an instance and also get the instances as and when needed
@@ -22,27 +30,40 @@ getConstraint:{[f;r;h;p]
 	if[not null f;c:c,enlist((=;`farm;enlist(f)))];
 	if[not null r;c:c,enlist((=;`resource;enlist(r)))];
 	if[not null h;c:c,enlist((=;`host;enlist(h)))];
-	if[not p=-1;c:c,enlist((=;`port;p))];
-	c}
+	if[not null p;c:c,enlist((=;`port;enlist(p)))];
+	c
+	}
 
 register:{[record]
-	`.reg.registry insert record}
+	`.reg.registry insert record
+	}
 
+deregister:{[f;r;h;p]
+	![`.reg.registry;
+		getConstraint[f;r;h;p];
+		0b;
+		`$()]
+	}
 exists:{[f;r;h;p]
 	r:?[`.reg.registry;
 		getConstraint[f;r;h;p];
 		0b;
 		()];
-	$[0<count r;1b;0b]}
+	$[0<count r;:1b;:0b];
+	}
 
-getAll:{[f;r;h;p]
+find:{[f;r;h;p]
 	?[`.reg.registry;
 		getConstraint[f;r;h;p];
 		0b;
-		()]}
+		()]
+	}
 
 getUrl:{[f;r;h;p]
-	r:?[`.reg.registry;((=;`farm;enlist`f);(=;`resource;enlist`r);(=;`host;enlist`h);(=;`port;p));0b;`host`port];
+	r:?[`.reg.registry;
+		getConstraint[f;r;h;p];
+		0b;
+		g!g:`host`port];
 	hsym `$(":" sv string raze first r)
 	}
 

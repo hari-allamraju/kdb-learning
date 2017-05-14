@@ -4,5 +4,5 @@ registry:([];
 	farm:`symbol$();
 	resource:`symbol$(); 
 	host:`symbol$(); 
-	port:`int$())
+	port:`symbol$())
 \d .
