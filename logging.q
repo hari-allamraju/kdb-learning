@@ -24,6 +24,4 @@ error:{
 	if[ERROR>=logLevel;doLog["ERROR";x]]
 	}
 
-debug["Initialized logging"]
-
 \d .

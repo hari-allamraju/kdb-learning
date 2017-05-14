@@ -1,7 +1,11 @@
 \c 50 500
 cwd:system"cd"
+system"l ",cwd,"/utils.q"
 system"l ",cwd,"/logging.q"
 
+opts:.Q.def[`group`resource`logLevel!(`default;`registry;4)].Q.opt .z.x
+
+.log.logLevel:opts`logLevel
 .log.debug "Running from ",cwd
 
 
@@ -10,22 +14,21 @@ if[0i=system"p";system"p 1111"]
 p:string system"p"
 .log.debug "Running on port",p
 
-opts:.Q.def[`group`resource!`default`registry].Q.opt .z.x
-
 /load the schema of the tables that we want to use in this service
 .log.debug "Loading schema"
 system"l ",cwd,"/schema/registry.q"
 
 
 /make a record for the registry - other KDB services can connect to this and check
-`.reg.registry insert (opts`group;opts`registry;.z.h;`$p)
-.log.info "registered self on ",(string .z.h)," with port ",p
+host_ip:.utils.getIP[]
+`.reg.registry insert (opts`group;opts`resource;`$host_ip;`$p)
+.log.info "registered self on ",host_ip," with port ",p
 
 
 /define some code that can be used to register an instance and also get the instances as and when needed
 \d .reg
 
-getConstraint:{[f;r;h;p]
+getConstraint:{[d]
 	c:();
 	if[not null f;c:c,enlist((=;`farm;enlist(f)))];
 	if[not null r;c:c,enlist((=;`resource;enlist(r)))];
