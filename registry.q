@@ -19,16 +19,10 @@ p:string system"p"
 system"l ",cwd,"/schema/registry.q"
 
 
-/make a record for the registry - other KDB services can connect to this and check
-host_ip:.utils.getIP[]
-`.reg.registry insert (opts`group;opts`resource;`$host_ip;`$p)
-.log.info "registered self on ",host_ip," with port ",p
-
-
 /define some code that can be used to register an instance and also get the instances as and when needed
 \d .reg
 
-getConstraint:{[d]
+getConstraint:{[f;r;h;p]
 	c:();
 	if[not null f;c:c,enlist((=;`farm;enlist(f)))];
 	if[not null r;c:c,enlist((=;`resource;enlist(r)))];
@@ -71,3 +65,9 @@ getUrl:{[f;r;h;p]
 	}
 
 \d .
+
+/make a record for the registry - other KDB services can connect to this and check
+host_ip:.utils.getIP[]
+.reg.register . enlist(opts`group;opts`resource;`$host_ip;`$p)
+.log.info "registered self on ",host_ip," with port ",p
+

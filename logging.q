@@ -6,7 +6,7 @@ ERROR:3
 OFF:4
 logLevel:DEBUG
 
-doLog:{show "    " sv (string .z.Z;x;y)}
+doLog:{0N! "    " sv (string .z.Z;x;y)}
 
 debug:{
 	if[DEBUG>=logLevel;doLog["DEBUG";x]]
